@@ -176,6 +176,30 @@ app.post('/pdf', async (req, res) => {
   }
 });
 
+// Upload file to MinIO
+app.post('/upload-minio', async (req, res) => {
+  try {
+    const { bucket, filename, data_base64, content_type } = req.body;
+    if (!bucket || !filename || !data_base64) return res.status(400).json({ error: 'bucket, filename, data_base64 required' });
+
+    const Minio = require('minio');
+    const client = new Minio.Client({
+      endPoint: process.env.MINIO_ENDPOINT || 'barralinstitute-minio.nqsfgd.easypanel.host',
+      port: 443, useSSL: true,
+      accessKey: process.env.MINIO_KEY || 'Nabil',
+      secretKey: process.env.MINIO_SECRET || 'Barral2017'
+    });
+
+    const buffer = Buffer.from(data_base64, 'base64');
+    await client.putObject(bucket, filename, buffer, buffer.length, { 'Content-Type': content_type || 'application/pdf' });
+
+    const url = 'https://' + (process.env.MINIO_ENDPOINT || 'barralinstitute-minio.nqsfgd.easypanel.host') + '/' + bucket + '/' + encodeURIComponent(filename);
+    res.json({ ok: true, url, size: buffer.length });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Health check
 app.get('/health', (_, res) => res.json({ ok: true }));
 
