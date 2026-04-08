@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Kaushan+Script&family=Cinzel:wght@700;900&family=Great+Vibes&family=Anton&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    width: var(--W); height: var(--H);
+    overflow: hidden; background: #000;
+    position: relative;
+  }
+
+  /* ── Fondo ── */
+  #fondo {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    z-index: 1;
+  }
+  #fondo::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(0,0,0,0.5) 0%,
+      rgba(0,0,0,0.1) 25%,
+      rgba(0,0,0,0.05) 50%,
+      rgba(0,0,0,0.2) 75%,
+      rgba(0,0,0,0.75) 100%
+    );
+    z-index: 2;
+  }
+
+  /* ── TEXTO BAILE GIGANTE (detrás de todo) ── */
+  #baile-gigante {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    text-align: center;
+    width: 110%;
+    pointer-events: none;
+    line-height: 1;
+  }
+  #baile-gigante .letra {
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-baile);
+    color: rgba(255,255,255,0.10);
+    display: block;
+    letter-spacing: -4px;
+    line-height: 1;
+  }
+  /* Mixed case estilo BaChaTa */
+  #baile-gigante .letra.alt {
+    color: rgba(255,200,80,0.07);
+  }
+
+  /* ── FOTOS (zona central, full height) ── */
+  #fotos-layer {
+    position: absolute;
+    left: 0; right: 0;
+    top: var(--fotos-top);
+    bottom: var(--bottom-h);
+    z-index: 4;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+  }
+  .foto-slot {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .foto-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+  /* sombra interior para fundir fotos con fondo */
+  .foto-slot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 60px 0 60px rgba(0,0,0,0.35), inset -60px 0 60px rgba(0,0,0,0.35);
+    pointer-events: none;
+  }
+  .foto-slot:first-child { position: relative; }
+  .foto-slot:last-child  { position: relative; }
+
+  /* Stagger: segunda foto ligeramente más baja */
+  .foto-slot.stagger { padding-top: var(--stagger-top); }
+
+  /* ── NOMBRES VERTICALES ── */
+  .nombre-vert {
+    position: absolute;
+    z-index: 7;
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-nombre-vert);
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    color: #fff;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+    writing-mode: vertical-rl;
+    top: 50%; transform: translateY(-50%);
+  }
+  #nombre-izq {
+    left: var(--nombre-offset);
+    transform: translateY(-50%) rotate(180deg);
+  }
+  #nombre-der {
+    right: var(--nombre-offset);
+  }
+
+  /* Nombres para 3+ profesores (horizontal debajo) */
+  .nombre-bajo {
+    position: absolute;
+    bottom: calc(var(--bottom-h) + 12px);
+    left: 50%; transform: translateX(-50%);
+    z-index: 8;
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-nombre-bajo);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+    text-align: center;
+    width: 90%;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 8;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--pad);
+  }
+
+  #fecha { color: #fff; line-height: 1; }
+  .f-dia  {
+    font-family: 'Montserrat', sans-serif; font-weight: 900;
+    font-size: var(--f-dia-n); letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
+  }
+  .f-num  {
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-dia-num); line-height: 0.85;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
+    display: block;
+  }
+  .f-mes  {
+    font-family: 'Montserrat', sans-serif; font-weight: 900;
+    font-size: var(--f-dia-n); letter-spacing: 6px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
+    display: block;
+  }
+
+  #domingos {
+    text-align: right;
+  }
+  #domingos .dom {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: var(--f-domingos);
+    color: #fff; letter-spacing: 2px;
+    text-shadow: 2px 2px 12px rgba(0,0,0,1);
+    display: block; line-height: 1;
+  }
+  #domingos .hab {
+    font-family: 'Kaushan Script', cursive;
+    font-size: var(--f-habaneros);
+    color: #ff9eb5;
+    text-shadow: 1px 1px 8px rgba(0,0,0,0.9);
+    display: block; line-height: 1.1;
+  }
+
+  /* ── SBK PARTY ── */
+  #sbk-block {
+    position: absolute;
+    top: var(--sbk-top);
+    left: 50%; transform: translateX(-50%);
+    z-index: 8;
+    text-align: center;
+    white-space: nowrap;
+  }
+  #sbk-wrap { display: inline-flex; align-items: flex-start; }
+  #sbk-txt {
+    font-family: 'Cinzel', serif; font-weight: 900;
+    font-size: var(--f-sbk);
+    color: #fff;
+    -webkit-text-stroke: 2px rgba(200,160,50,0.7);
+    text-shadow:
+      0 0 40px rgba(255,220,80,0.5),
+      5px 5px 0 rgba(0,0,0,0.6),
+      10px 10px 0 rgba(0,0,0,0.2);
+    letter-spacing: -4px; line-height: 1;
+  }
+  #party-txt {
+    font-family: 'Great Vibes', cursive;
+    font-size: var(--f-party);
+    color: #fff;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+    align-self: flex-end;
+    margin-bottom: var(--party-mb);
+    margin-left: 6px;
+  }
+
+  /* ── HABANA LOGO ── */
+  #habana-block {
+    position: absolute;
+    top: var(--habana-top);
+    left: 50%; transform: translateX(-50%);
+    z-index: 8;
+    text-align: center;
+  }
+  #habana-block img {
+    height: var(--f-habana);
+    object-fit: contain;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.8));
+  }
+
+  /* ── BARRA INFERIOR ── */
+  #bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: var(--bottom-h);
+    z-index: 9;
+    background: rgba(6,14,45,0.92);
+    border-top: 3px solid rgba(200,160,60,0.5);
+    padding: var(--bot-pad) var(--pad);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .taller-row {
+    display: flex; align-items: baseline; gap: 16px;
+    line-height: 1.1;
+  }
+  .t-nombre {
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-taller); color: #fff;
+    letter-spacing: 2px; text-transform: uppercase;
+    min-width: var(--t-nombre-w);
+  }
+  .t-hora {
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-taller); color: rgba(255,255,255,0.9);
+  }
+  .social-row {
+    display: flex; align-items: baseline; gap: 16px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    margin-top: 4px; padding-top: 4px; line-height: 1.1;
+  }
+  .s-label {
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-taller); color: #fff;
+    letter-spacing: 2px; min-width: var(--t-nombre-w);
+  }
+  .s-hora {
+    font-family: 'Anton', sans-serif;
+    font-size: var(--f-taller); color: rgba(255,255,255,0.8);
+  }
+  #bottom-meta {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 6px;
+  }
+  #entrada-txt {
+    font-family: 'Montserrat', sans-serif; font-weight: 900;
+    font-size: var(--f-entrada); color: #ffd700;
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+  #dir-txt {
+    font-family: 'Montserrat', sans-serif; font-weight: 400;
+    font-size: var(--f-dir); color: rgba(255,255,255,0.6);
+    text-transform: uppercase; text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<div id="fondo"></div>
+<div id="baile-gigante"></div>
+<div id="fotos-layer"></div>
+<span class="nombre-vert" id="nombre-izq"></span>
+<span class="nombre-vert" id="nombre-der"></span>
+
+<div id="header">
+  <div id="fecha">
+    <span class="f-dia" id="el-dia"></span>
+    <span class="f-num" id="el-num"></span>
+    <span class="f-mes" id="el-mes"></span>
+  </div>
+  <div id="domingos">
+    <span class="dom">DOMINGOS</span>
+    <span class="hab">Habaneros</span>
+  </div>
+</div>
+
+<div id="sbk-block">
+  <div id="sbk-wrap">
+    <span id="sbk-txt">SBK</span>
+    <span id="party-txt">Party</span>
+  </div>
+</div>
+
+<div id="habana-block">
+  <img id="habana-img" src="" alt="Habana">
+</div>
+
+<div id="bottom">
+  <div id="talleres-list"></div>
+  <div class="social-row">
+    <span class="s-label">SOCIAL</span>
+    <span class="s-hora" id="social-el"></span>
+  </div>
+  <div id="bottom-meta">
+    <span id="entrada-txt"></span>
+    <span id="dir-txt">CALLE FUENTERRADA 5, TOLEDO</span>
+  </div>
+</div>
+
+<script>
+const D = __DATA__;
+const W = D.width  || 1080;
+const H = D.height || 1920;
+const isReel = H >= 1800;
+const r = document.documentElement;
+const set = (k,v) => r.style.setProperty(k, v);
+
+// ── Medidas base ─────────────────────────────────────────────────────────────
+const PAD        = isReel ? 44  : 34;
+const BOTTOM_H   = isReel ? 210 : 162;
+const HEADER_H   = isReel ? 200 : 155;
+const SBK_TOP    = isReel ? HEADER_H - 30 : HEADER_H - 22;
+const SBK_H      = isReel ? 210 : 162;
+const HABANA_TOP = SBK_TOP + SBK_H - 10;
+const HABANA_H   = isReel ? 110 : 84;
+const FOTOS_TOP  = HABANA_TOP + HABANA_H + 10;
+
+set('--W',            W + 'px');
+set('--H',            H + 'px');
+set('--pad',          PAD + 'px');
+set('--bottom-h',     BOTTOM_H + 'px');
+set('--fotos-top',    FOTOS_TOP + 'px');
+set('--stagger-top',  (isReel ? 60 : 44) + 'px');
+set('--sbk-top',      SBK_TOP + 'px');
+set('--habana-top',   HABANA_TOP + 'px');
+set('--f-dia-n',      (isReel ? 28 : 22) + 'px');
+set('--f-dia-num',    (isReel ? 110 : 84) + 'px');
+set('--f-domingos',   (isReel ? 40 : 31) + 'px');
+set('--f-habaneros',  (isReel ? 58 : 44) + 'px');
+set('--f-sbk',        (isReel ? 210 : 162) + 'px');
+set('--f-party',      (isReel ? 78 : 60) + 'px');
+set('--party-mb',     (isReel ? 22 : 16) + 'px');
+set('--f-habana',     (isReel ? 115 : 88) + 'px');
+set('--f-baile',      (isReel ? 260 : 200) + 'px');
+set('--f-nombre-vert',(isReel ? 44 : 34) + 'px');
+set('--nombre-offset',(isReel ? 4 : 3) + 'px');
+set('--f-nombre-bajo',(isReel ? 36 : 28) + 'px');
+set('--bot-pad',      (isReel ? 14 : 10) + 'px');
+set('--f-taller',     (isReel ? 58 : 44) + 'px');
+set('--t-nombre-w',   (isReel ? '200px' : '156px'));
+set('--f-entrada',    (isReel ? 22 : 17) + 'px');
+set('--f-dir',        (isReel ? 17 : 13) + 'px');
+
+// ── Fondo ────────────────────────────────────────────────────────────────────
+document.getElementById('fondo').style.backgroundImage = `url('${D.fondo_url}')`;
+
+// ── Fecha ────────────────────────────────────────────────────────────────────
+const DIAS  = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const fecha = new Date(D.fecha + 'T12:00:00');
+document.getElementById('el-dia').textContent = DIAS[fecha.getDay()];
+document.getElementById('el-num').textContent = fecha.getDate();
+document.getElementById('el-mes').textContent = MESES[fecha.getMonth()];
+
+// ── Habana logo ───────────────────────────────────────────────────────────────
+document.getElementById('habana-img').src = D.logo_habana_url || '';
+
+// ── Texto baile gigante (mezclado tipo BaChaTa) ───────────────────────────────
+const baileEl = document.getElementById('baile-gigante');
+const baileTxt = (D.estilo_baile || (D.talleres && D.talleres[0] ? D.talleres[0].nombre : 'Bachata')).toUpperCase();
+// Dividir en letras alternando minúscula/mayúscula
+const letras = baileTxt.split('').map((l,i) => i%2===0 ? l.toUpperCase() : l.toLowerCase()).join('');
+const span1 = document.createElement('span');
+span1.className = 'letra';
+span1.textContent = letras;
+const span2 = document.createElement('span');
+span2.className = 'letra alt';
+span2.textContent = baileTxt;
+baileEl.appendChild(span1);
+baileEl.appendChild(span2);
+
+// ── Profesores ────────────────────────────────────────────────────────────────
+const profs = D.profesores || [];
+const n = profs.length;
+const fotosLayer = document.getElementById('fotos-layer');
+const nomIzq = document.getElementById('nombre-izq');
+const nomDer = document.getElementById('nombre-der');
+
+if (n <= 2) {
+  if (n >= 1) nomIzq.textContent = profs[0].nombre;
+  if (n === 2) nomDer.textContent = profs[1].nombre;
+  else nomDer.style.display = 'none';
+
+  profs.forEach((p, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'foto-slot' + (i === 1 ? ' stagger' : '');
+    const img = document.createElement('img');
+    img.src = p.foto_url || p.foto || '';
+    img.onerror = () => { slot.style.background = 'transparent'; };
+    slot.appendChild(img);
+    fotosLayer.appendChild(slot);
+  });
+
+} else {
+  // 3-5 profesores: nombres centrados debajo
+  nomIzq.style.display = 'none';
+  nomDer.style.display = 'none';
+
+  profs.forEach((p, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'foto-slot' + (i % 2 === 1 ? ' stagger' : '');
+    const img = document.createElement('img');
+    img.src = p.foto_url || p.foto || '';
+    img.onerror = () => { slot.style.background = 'transparent'; };
+    slot.appendChild(img);
+    fotosLayer.appendChild(slot);
+  });
+
+  const nombres = document.createElement('div');
+  nombres.className = 'nombre-bajo';
+  nombres.textContent = profs.map(p => p.nombre).join('  ·  ');
+  document.body.appendChild(nombres);
+}
+
+// ── Talleres ──────────────────────────────────────────────────────────────────
+const talleresEl = document.getElementById('talleres-list');
+(D.talleres || []).forEach(t => {
+  const row = document.createElement('div');
+  row.className = 'taller-row';
+  row.innerHTML = `<span class="t-nombre">${(t.nombre||'').toUpperCase()}</span><span class="t-hora">${t.inicio||''} - ${t.fin||''}</span>`;
+  talleresEl.appendChild(row);
+});
+
+// ── Social ────────────────────────────────────────────────────────────────────
+document.getElementById('social-el').textContent =
+  (D.social_inicio||'') + ' - CIERRE ' + (D.social_cierre||'');
+
+// ── Entrada / dirección ───────────────────────────────────────────────────────
+document.getElementById('entrada-txt').textContent =
+  D.entrada_libre !== false ? 'ENTRADA GRATUITA' : (D.precio || '');
+if (D.direccion) document.getElementById('dir-txt').textContent = D.direccion;
+</script>
+</body>
+</html>
